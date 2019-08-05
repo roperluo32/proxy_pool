@@ -15,21 +15,22 @@ import re
 import sys
 import requests
 from time import sleep
+import json
 
 sys.path.append('..')
 
 from Util.WebRequest import WebRequest
 from Util.utilFunction import getHtmlTree
+from Util.LogHandler import LogHandler
 
 # for debug to disable insecureWarning
 requests.packages.urllib3.disable_warnings()
 
-
+globLog = LogHandler('GetProxy')
 class GetFreeProxy(object):
     """
     proxy getter
     """
-
     @staticmethod
     def freeProxy01():
         """
@@ -245,6 +246,23 @@ class GetFreeProxy(object):
                 continue
             for tr in tr_list:
                 yield tr.xpath("./td[2]/text()")[0] + ":" + tr.xpath("./td[3]/text()")[0]
+
+    @staticmethod
+    def qingtingProxy():
+        #url = 'https://proxy.horocn.com/api/proxies?order_id=CZBT1640084869011288&num=2&format=json&line_separator=win&can_repeat=no'
+        url = 'https://proxy.horocn.com/api/proxies?order_id=4RWW1640264141772694&num=10&format=json&line_separator=win&can_repeat=no'
+        r = requests.get(url)
+        globLog.debug("response text:{}".format(r.text))
+        try:
+            proxies = json.loads(r.text)
+
+            #globLog.debug("proxies:", proxies)
+            for proxy in proxies:
+                #globLog.debug("proxy:", proxy)
+                yield ':'.join([proxy["host"],proxy["port"]])
+        except Exception as e:
+            globLog.error("some error when get qingting proxy.error:", e)
+            return
 
     # @staticmethod
     # def freeProxy10():
